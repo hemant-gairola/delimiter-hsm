@@ -1,0 +1,125 @@
+# Copyright (c) 2021, 2023 by Delphix. All rights reserved.
+version: "3.7"
+services:
+    controller-service:
+        build:
+            context: controller-service
+            args:
+              - VERSION=${VERSION}
+        image: delphix-controller-service-app:${VERSION}
+        healthcheck:
+          test: 'curl --fail --silent http://localhost:8080/actuator/health | grep UP || exit 1'
+          interval: 30s
+          timeout: 25s
+          retries: 3
+          start_period: 30s
+        depends_on:
+          - unload-service
+          - masking-service
+          - load-service
+        init: true
+        networks:
+          - hyperscale-net
+        restart: unless-stopped
+        volumes:
+          - hyperscale-controller-data:/data
+          # uncomment below to specify path for file upload
+          #- /path/for/upload:/opt/delphix/uploads
+        environment:
+          - API_KEY_CREATE=${API_KEY_CREATE:-false}
+          - EXECUTION_STATUS_POLL_DURATION=${EXECUTION_STATUS_POLL_DURATION:-12000}
+          - LOGGING_LEVEL_COM_DELPHIX_HYPERSCALE=${LOG_LEVEL_CONTROLLER_SERVICE:-INFO}
+          - API_VERSION_COMPATIBILITY_STRICT_CHECK=${API_VERSION_COMPATIBILITY_STRICT_CHECK:-false}
+          - LOAD_SERVICE_REQUIREPOSTLOAD=${LOAD_SERVICE_REQUIRE_POST_LOAD:-true}
+          - SKIP_UNLOAD_SPLIT_COUNT_VALIDATION=${SKIP_UNLOAD_SPLIT_COUNT_VALIDATION:-false}
+          - SKIP_LOAD_SPLIT_COUNT_VALIDATION=${SKIP_LOAD_SPLIT_COUNT_VALIDATION:-false}
+    unload-service:
+        build:
+            context: unload-service
+            args:
+              - VERSION=${VERSION}
+        image: delphix-unload-service-app:${VERSION}
+        #image: delphix-mssql-unload-service-app:${VERSION}
+        init: true
+        environment:
+          - LOGGING_LEVEL_COM_DELPHIX_HYPERSCALE=${LOG_LEVEL_UNLOAD_SERVICE:-INFO}
+          - UNLOAD_FETCH_ROWS=${UNLOAD_FETCH_ROWS:-10000}
+          #- UNLOAD_SPARK_DRIVER_MEMORY=${UNLOAD_SPARK_DRIVER_MEMORY:- }
+          #- UNLOAD_SPARK_DRIVER_CORES=${UNLOAD_SPARK_DRIVER_CORES:- }
+          #- SPARK_DATE_TIMESTAMP_FORMAT=${DATE_TIMESTAMP_FORMAT:-yyyy-MM-dd HH:mm:ss.SSS}
+          #- UNLOAD_CONF_DISABLE_REPLICATION=${UNLOAD_LOAD_CONF_DISABLE_REPLICATION:-true}
+          #- SPARK_SMALL_DATE_TIMESTAMP_FORMAT=${SMALL_DATE_TIMESTAMP_FORMAT:-yyyy-MM-dd HH:mm}
+        networks:
+          - hyperscale-net
+        restart: unless-stopped
+        volumes:
+          - hyperscale-unload-data:/data
+          # Uncomment below lines to mount respective paths.
+          #- mount/path/on/host/:/etc/hyperscale
+
+    masking-service:
+        build:
+            context: masking-service
+            args:
+              - VERSION=${VERSION}
+        image: delphix-masking-service-app:${VERSION}
+        init: true
+        networks:
+          - hyperscale-net
+        restart: unless-stopped
+        volumes:
+          - hyperscale-masking-data:/data
+          # Uncomment below lines to mount respective paths.
+          #- mount/path/on/host/:/etc/hyperscale
+        environment:
+          - LOGGING_LEVEL_COM_DELPHIX_HYPERSCALE=${LOG_LEVEL_MASKING_SERVICE:-INFO}
+          - INTELLIGENT_LOADBALANCE_ENABLED=${INTELLIGENT_LOADBALANCE_ENABLED:-true}
+    load-service:
+        build:
+            context: load-service
+            args:
+              - VERSION=${VERSION}
+        image: delphix-load-service-app:${VERSION}
+        #image: delphix-mssql-load-service-app:${VERSION}
+        init: true
+        environment:
+          - LOGGING_LEVEL_COM_DELPHIX_HYPERSCALE=${LOG_LEVEL_LOAD_SERVICE:-INFO}
+          - SQLLDR_BLOB_CLOB_CHAR_LENGTH=${SQLLDR_BLOB_CLOB_CHAR_LENGTH:-20000}
+          #- LOAD_SPARK_DRIVER_MEMORY=${LOAD_SPARK_DRIVER_MEMORY:- }
+          #- LOGGING_LEVEL_COM_DELPHIX_MASKING=${LOGGING_LEVEL_COM_DELPHIX_MASKING:-INFO}
+          #- LOAD_SPARK_DRIVER_CORES=${LOAD_SPARK_DRIVER_CORES:- }
+          #- SPARK_DATE_TIMESTAMP_FORMAT=${DATE_TIMESTAMP_FORMAT:-yyyy-MM-dd HH:mm:ss.SSS}
+          #- LOAD_CONF_DISABLE_REPLICATION=${UNLOAD_LOAD_CONF_DISABLE_REPLICATION:-true}
+          #- SPARK_SMALL_DATE_TIMESTAMP_FORMAT=${SMALL_DATE_TIMESTAMP_FORMAT:-yyyy-MM-dd HH:mm}
+          #- LOAD_SPARK_BATCH_SIZE=${LOAD_SPARK_BATCH_SIZE:-10000}
+          #- LOAD_SPARK_JOB_TABLE_LOCK=${LOAD_SPARK_JOB_TABLE_LOCK:-true}
+        networks:
+          - hyperscale-net
+        restart: unless-stopped
+        volumes:
+          - hyperscale-load-data:/data
+          # Uncomment below lines to share the instantclient with container.
+          #- /path/to/instantclient/:/usr/lib/instantclient
+          # Uncomment below lines to mount respective paths.
+          #- mount/path/on/host/:/etc/hyperscale
+    proxy:
+        build: nginx
+        image: delphix-hyperscale-masking-proxy:${VERSION}
+        init: true
+        networks:
+          - hyperscale-net
+        ports:
+          - "443:443"
+        restart: unless-stopped
+        depends_on:
+          - controller-service
+        #volumes:
+          # Uncomment to bind mount /etc/config
+          #- /nginx/config/path/on/host:/etc/config
+networks:
+    hyperscale-net:
+volumes:
+    hyperscale-load-data:
+    hyperscale-unload-data:
+    hyperscale-masking-data:
+    hyperscale-controller-data:

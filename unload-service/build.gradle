@@ -1,0 +1,222 @@
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.CsvReportRenderer
+import com.github.jk1.license.render.InventoryHtmlReportRenderer
+import com.github.jk1.license.render.TextReportRenderer
+
+/*
+ * Copyright (c) 2021, 2022 by Delphix. All rights reserved.
+ */
+buildscript {
+    repositories {
+        maven {
+            url 'http://artifactory.delphix.com/artifactory/masking-maven'
+        }
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:3.0.0'
+        classpath('com.oracle.database.jdbc.debug:ojdbc11_g:'+ ojdbcVersion)
+    }
+}
+
+plugins {
+  id 'com.diffplug.spotless'
+  id 'org.hidetake.swagger.generator'
+  id 'org.springframework.boot'
+  id 'io.freefair.lombok'
+  id 'com.github.jk1.dependency-license-report'
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'org.unbroken-dome.test-sets'
+
+repositories {
+    maven {
+        url 'http://artifactory.delphix.com/artifactory/masking-maven'
+    }
+    mavenCentral()
+}
+
+version = "$System.env.VERSION"
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_11
+	targetCompatibility = JavaVersion.VERSION_11
+}
+
+bootJar {
+    archiveBaseName.set('dlpx-hyperscale-masking')
+    mainClass.set('com.delphix.hyperscale.UnloadServicesApplication')
+}
+
+configurations.findAll().each { configuration ->
+
+    configuration.resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.json') {
+            details.useVersion orgJsonVersion
+        }
+    }
+}
+
+dependencies {
+    implementation project(':common-lib')
+    implementation group: 'com.evanlennick', name: 'retry4j', version: retry4jVersion
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonDataTypeVersion
+    implementation group: 'com.google.guava', name: 'guava', version: guavaVersion
+    implementation group: 'com.google.crypto.tink', name:'tink', version: tinkVersion
+    implementation group: 'io.swagger.core.v3', name: 'swagger-annotations', version: swaggerAnnotationsVersion
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version:  httpClientVersion
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootVersion
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version: springBootVersion
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: springBootVersion
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: springBootVersion
+    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: sqliteJdbcVersion
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: commonsLangVersion
+    implementation group: 'com.pivovarit', name: 'parallel-collectors', version: '2.5.0'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: modelmapperVersion
+    implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.4'
+    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: rxJavaVersion
+    implementation group: 'com.oracle.database.jdbc', name: 'ojdbc11', version: ojdbcVersion
+    implementation group: 'com.opencsv', name: 'opencsv', version: opencsvVersion
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: hikariCPVersion
+
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitJupiterEngineVersion
+    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion
+    testImplementation group: 'org.mockito', name:'mockito-junit-jupiter', version: mockitoVersion
+    testImplementation group: 'org.mockito', name: 'mockito-inline', version: mockitoVersion
+    testImplementation group: 'junit', name: 'junit', version : junitVersion
+
+    swaggerCodegen group: 'io.swagger.codegen.v3', name: 'swagger-codegen-cli', version: swaggerCodegenCliVersion
+    swaggerCodegen group: 'io.swagger.codegen.v3', name: 'swagger-codegen-generators', version: swaggerCodegenGeneratorsVersion
+}
+
+swaggerSources {
+    api {
+        inputFile = file("./src/main/resources/api.yaml")
+        code {
+            language = 'spring'
+            outputDir = file('swagger-generated-api')
+            configFile = file('swagger-config-api.json')
+            components = [models: true, apis: true]
+        }
+    }
+
+    petstore {
+        inputFile = file("./src/main/resources/api.yaml")
+        code {
+            language = 'html'
+        }
+    }
+}
+
+compileJava.dependsOn generateSwaggerCode
+sourceSets {
+    main {
+        java {
+            srcDir "${swaggerSources.api.code.outputDir}/src/main/java"
+        }
+    }
+}
+
+/*
+ * This is useful for figuring out the required JDK/JRE modules. After running this task you can run
+ * `jdeps -R -s --multi-release 11 -cp 'build/libs/dependencies/*' build/libs/dlpx-api-gw-<version>.jar`
+ * to get a list of all the required modules. Passing that output to
+ * `grep "\-> java" | awk '{print $3;}' | sort -u`
+ * will provide the concise list of required modules for jlink.
+ */
+task copyDependencies(type: Copy) {
+    from configurations.default
+    into 'build/libs/dependencies'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+testSets {
+    integrationTest { dirName = 'integration-test' }
+}
+
+//Ensure that the check task fails the build if there are failing integration tests
+check.dependsOn integrationTest
+
+//Ensure that the unit tests are run before our integration tests
+integrationTest.mustRunAfter test
+
+spotless {
+    java {
+        eclipse().configFile "${project.rootDir}/eclipse_google_java_format.xml"
+        licenseHeaderFile("${project.rootDir}/spotless.license.java").yearSeparator(', ')
+        removeUnusedImports()
+        target project.fileTree("${projectDir}") {
+            include '**/*.java'
+            // Exclude files generated by swagger.
+            exclude '**/swagger-generated-*/**/*.*'
+            exclude 'spotless.license.java'
+            // Exclude build output.
+            exclude '**/build/**/*.*'
+        }
+    }
+}
+
+configurations {
+    all*.exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+    all*.exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
+
+    licenseReport {
+        transitive = false
+    }
+}
+
+def licenseReportDir = file("${project.buildDir}/reports/dependency-license")
+
+licenseReport {
+    outputDir = licenseReportDir
+
+    /*
+     * Starting with version 2.12 jackson is now publishing gradle module metadata
+     * (see release notes https://github.com/FasterXML/jackson-bom/blob/master/release-notes/VERSION-2.x).
+     * According to this blog post https://blog.gradle.org/alignment-with-gradle-module-metadata
+     * there is a new jackson-bom node in the graph of dependencies, that is added implicitly.
+     * Therefore, jackson-bom ends up under Unknown.Thus, jackson-bom can be excluded from the license report.
+     */
+    excludes = ['com.fasterxml.jackson:jackson-bom']
+
+    /*
+     * This normalizer unifies license entries that appear to be duplicates, such as "The Apache
+     * Software License, Version 2.0" and "Apache Software License, Version 2.0".
+     */
+    filters = [new LicenseBundleNormalizer()]
+
+    /*
+     * The CSV report generated by this repository will be concatenated with the CSV report
+     * generated by other repositories during the hyperscale build; therefore, we omit the header
+     * line to enable this concatenation.
+     */
+    def csvReportRenderer = new CsvReportRenderer('licenses.csv')
+    csvReportRenderer.includeHeaderLine = false
+
+    /*
+     * The text report generated by this repository will be concatenated with the text report
+     * generated by other repositories during the hyperscale build.
+     */
+    def textReportRenderer = new TextReportRenderer('THIRD-PARTY-NOTICES.txt')
+
+    /*
+     * We want to create an inventory report during the hyperscale build that contains the license
+     * metadata from all repositories that are part of the hyperscale. This makes it easier to know
+     * the individual licenses that are needed to verify with the legal department.
+     */
+    def inventoryHtmlReportRender = new InventoryHtmlReportRenderer('report.html', 'Hyperscale Masking Unload Service')
+
+    renderers = [csvReportRenderer, textReportRenderer, inventoryHtmlReportRender]
+}
+
+artifacts {
+    licenseReport(licenseReportDir) {
+        builtBy generateLicenseReport
+    }
+}

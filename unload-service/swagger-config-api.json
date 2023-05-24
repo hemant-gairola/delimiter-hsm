@@ -1,0 +1,9 @@
+{
+  "dateLibrary": "java8",
+  "hideGenerationTimestamp": true,
+  "modelPackage": "com.delphix.hyperscale.model",
+  "apiPackage": "com.delphix.hyperscale.api",
+  "interfaceOnly": true,
+  "packageName": "api",
+  "useTags": true
+}

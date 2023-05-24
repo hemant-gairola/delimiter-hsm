@@ -1,0 +1,5 @@
+# Copyright (c) 2021 by Delphix. All rights reserved.
+# Exclude everything by default
+*
+
+!build/libs/*
