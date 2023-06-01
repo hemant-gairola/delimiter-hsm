@@ -1,0 +1,43 @@
+#
+# Copyright (c) 2023 by Delphix. All rights reserved.
+#
+
+repos:
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v4.3.4
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/jorgetomtz/pre-commit-hooks
+    rev: v0.2.1
+    hooks:
+      - id: copyright-check
+        args: ["-o", "Delphix"]
+        exclude: >
+          (?x)^(
+            .*\.zip|
+            .*__init__.py|
+            .flake8|
+            .github/ISSUE_TEMPLATE/bug_report.md|
+            .github/ISSUE_TEMPLATE/feature_request.md|
+            .gitignore|
+            .isort.cfg|
+            .pre-commit-config.yaml|
+            CODE_OF_CONDUCT.md|
+            CONTRIBUTING.md|
+            Pipfile|
+            README.md|
+            SUPPORT.md|
+            mongo-unload-service/src/Dockerfile|
+            mongo-unload-service/.gitignore|
+          )$
