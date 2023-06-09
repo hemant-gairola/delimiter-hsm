@@ -1,0 +1,657 @@
+#
+# Copyright (c) 2023 by Delphix. All rights reserved.
+#
+
+openapi: 3.0.0
+info:
+  title: Delphix Hyperscale Unload Service
+  version: 'v3.1.0'
+  description: Delphix Hyperscale Unload Service API
+  contact:
+    name: Delphix Support
+    url: https://support.delphix.com
+    email: support@delphix.com
+servers:
+  - url: '/api'
+
+paths:
+  /connectors:
+    post:
+      tags:
+        - ConnectorManagement
+      summary: Create Connector.
+      operationId: create_connector
+      requestBody:
+        content:
+          application/json:
+            schema:
+              x-body-name: created_connector
+              $ref: "#/components/schemas/Connector"
+        description: The parameters to create an connector.
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ConnectorResponse'
+    get:
+      tags:
+        - ConnectorManagement
+      summary: Returns a list of connectors.
+      operationId: list_all_connector
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConnectorResponse'
+
+  /connectors/{connectorId}:
+    parameters:
+      - in: path
+        name: connectorId
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        required: true
+        description: The Id of the connector.
+    get:
+      tags:
+        - ConnectorManagement
+      summary: Get connector by Id.
+      operationId: get_connector
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ConnectorResponse'
+    put:
+      tags:
+        - ConnectorManagement
+      summary: Update a Connector.
+      operationId: update_connector
+      requestBody:
+        content:
+          application/json:
+            schema:
+              x-body-name: updated_connector
+              $ref: "#/components/schemas/Connector"
+        description: The updated Connector information.
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ConnectorResponse'
+    delete:
+      tags:
+        - ConnectorManagement
+      summary: Remove a Connector.
+      operationId: delete_connector
+      responses:
+        '200':
+          description: OK
+
+  /data-sets:
+    post:
+      tags:
+        - DataSets
+      summary: Create a Data Set.
+      operationId: create_data_set
+      requestBody:
+        content:
+          application/json:
+            schema:
+              x-body-name: data_set
+              $ref: "#/components/schemas/DataSet"
+        description: The parameters to create a data set.
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/DataSet'
+    get:
+      tags:
+        - DataSets
+      summary: Returns a list of Data Sets.
+      operationId: list_all_data_set
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataSet'
+
+  /data-sets/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        required: true
+        description: Numeric ID of the Data Set.
+    get:
+      tags:
+        - DataSets
+      summary: Returns a Data Set by ID.
+      operationId: get_data_set_by_id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/DataSet'
+    put:
+      tags:
+        - DataSets
+      summary: Update an existing Data Set.
+      operationId: update_data_set
+      requestBody:
+        content:
+          application/json:
+            schema:
+              x-body-name: dataset
+              $ref: "#/components/schemas/DataSet"
+        description: The updated data set information.
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/DataSet'
+    delete:
+      tags:
+        - DataSets
+      summary: Delete an existing Data Set.
+      operationId: delete_data_set
+      responses:
+        '200':
+          description: OK
+
+  /unload:
+    post:
+      tags:
+        - UnloadProcess
+      summary: Create a unload process to unload data to files from the source database.
+      operationId: create_unload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              x-body-name: unload
+              $ref: "#/components/schemas/Unload"
+        description: The parameters to create a unload process.
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/UnloadResponse'
+
+  /unload/status/{executionId}:
+    parameters:
+      - in: path
+        name: executionId
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        required: true
+        description: Numeric ID of the Unload execution.
+    get:
+      tags:
+        - UnloadProcess
+      summary: Returns a Unload status by execution ID.
+      operationId: get_unload_status_by_execution_id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/UnloadResponse'
+    put:
+      tags:
+        - UnloadProcess
+      summary: Update status of existing execution.
+      operationId: update_execution_status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              x-body-name: update_execution_status
+              $ref: "#/components/schemas/ExecutionStatus"
+        description: The update execution status.
+        required: true
+      responses:
+        '200':
+          description: Status updated.
+
+  /executions/{executionId}:
+    parameters:
+      - in: path
+        name: executionId
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        required: true
+        description: Numeric ID of the Unload execution.
+    delete:
+      tags:
+        - UnloadProcess
+      summary: Cleanup the existing unload execution.
+      operationId: clean_up_execution
+      responses:
+        '200':
+          description: OK
+
+  /source-data/{executionId}:
+    parameters:
+      - in: path
+        name: executionId
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        required: true
+        description: Numeric ID of execution.
+    get:
+      tags:
+        - UnloadProcess
+      summary: Returns the source data by execution ID.
+      operationId: get_source_data_by_execution_id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/SourceData'
+                
+  /api-version:
+    get:
+      tags:
+        - ApiVersion
+      summary: Returns the API version of service
+      operationId: get_api_version
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                $ref: '#/components/schemas/Api-Version'                
+
+components:
+  schemas:
+    ConnectorResponse:
+      title: ConnectorResponse
+      type: object
+      description: A Delphix source connector response.
+      required:
+        - jdbc_url
+        - user
+      properties:
+        id:
+          description: The Connector object entity ID.
+          type: integer
+          format: int64
+          nullable: false
+          readOnly: true
+        user:
+          description: The username of this connector.
+          type: string
+          minLength: 1
+          maxLength: 256
+        jdbc_url:
+          description: The jdbc url of this connector.
+          type: string
+          minLength: 1
+          maxLength: 256
+        connection_properties:
+          description: The properties of this connector.
+          type: object
+          additionalProperties:
+            type: string
+      example:
+        user: "user"
+        jdbc_url: "jdbc:oracle:thin:@hostname/databasename"
+        connection_properties: {
+          "db_property1": "property1_value",
+          "db_property2": "property2_value"
+        }
+
+    Connector:
+      title: Connector
+      description: A Delphix source connector.
+      type: object
+      required:
+        - password
+        - jdbc_url
+        - user
+      allOf:
+        - $ref: "#/components/schemas/ConnectorResponse"
+        - type: object
+          properties:
+            password:
+              description: The password of this connector.
+              type: string
+              minLength: 1
+              maxLength: 256
+            restoreSensitiveFields:
+              description: Passed to indicate that user want to restore the sensitive data.
+              type: boolean
+              default: false
+          example:
+            password: "password"
+            restoreSensitiveFields: false
+
+    DataSet:
+      title: DataSet
+      type: object
+      description: A Data Set containing information of source data.
+      required:
+        - connector_id
+        - mount_filesystem_id
+        - data_info
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        connector_id:
+          description: ID of the Connector model to be used for this Data Set.
+          type: integer
+          format: int64
+        mount_filesystem_id:
+          description: ID of the Mount Filesystem model to be used for this Data Set.
+          type: integer
+          format: int64
+        data_info:
+          description: Array of multiple objects, each providing the information of the table, schema etc.
+          type: array
+          minItems: 1
+          maxItems: 10000
+          items:
+            type: object
+            required:
+              - schema_name
+              - table_name
+            properties:
+              schema_name:
+                description: Database Schema name of source data.
+                type: string
+                minLength: 1
+              table_name:
+                description: Database Table name of source data.
+                type: string
+                minLength: 1
+              filter_key:
+                description: The unique database column field to filter the source data.
+                type: string
+                minLength: 1
+              unload_split:
+                description: The number of unloaded files to be generated from the source database.
+                type: integer
+                format: int64
+                nullable: true
+                default: 1
+      example:
+        connector_id: 1
+        mount_filesystem_id: 1
+        data_info:
+          - schema_name: "Schema1"
+            table_name: "Table1"
+            filter_key: "FilterKey1"
+            unload_split: 2
+          - schema_name: "Schema1"
+            table_name: "Table2"
+            filter_key: "FilterKey2"
+
+    Unload:
+      title: Unload
+      type: object
+      description: A Delphix Hyperscale Unload process data.
+      required:
+        - execution_id
+        - job_id
+        - dataset_id
+      properties:
+        execution_id:
+          description: The Unload object entity ID.
+          type: integer
+          format: int64
+          nullable: false
+        job_id:
+          description: ID of the Job model to be used for this Unload.
+          type: integer
+          format: int64
+          nullable: false
+        dataset_id:
+          description: ID of the Data Set model to be used for this Unload.
+          type: integer
+          format: int64
+          nullable: false
+        source_configs:
+          description: configuration properties for source datasource
+          type: object
+          properties:
+            max_concurrent_source_connection:
+              description: Maximum number of parallel connection that hyperscale can have with source datasource.
+              type: integer
+              format: int64
+      example:
+        execution_id: 1
+        job_id: 1
+        dataset_id: 1
+
+    UnloadResponse:
+      title: UnloadResponse
+      type: object
+      description: Unload Response model.
+      allOf:
+        - $ref: '#/components/schemas/ExecutionStatus'
+        - type: object
+          required:
+            - execution_id
+            - job_id
+            - start_time
+            - data_info
+          properties:
+            execution_id:
+              description: The Unload object entity ID.
+              type: integer
+              format: int64
+              nullable: false
+            job_id:
+              description: ID of the Job model to be used for this Unload.
+              type: integer
+              format: int64
+              nullable: false
+            start_time:
+              description: The time when the unload process is started.
+              type: string
+              readOnly: true
+            end_time:
+              description: The time when the unload process is completed.
+              type: string
+              readOnly: true
+            data_info:
+              description: Array of multiple objects, each object providing the information like sourceKey and file_info.
+              type: array
+              minItems: 1
+              maxItems: 10000
+              items:
+                type: object
+                required:
+                  - source_key
+                  - rows_unloaded
+                  - unload_file_path
+                  - status
+                properties:
+                  source_key:
+                    description: object providing the information like schema_name, table_name or file_name of the source datasource
+                    type: object
+                    additionalProperties:
+                      type: string
+                      readOnly: true
+                  rows_unloaded:
+                    description: Total number of rows unloaded from the database table.
+                    type: integer
+                    format: int64
+                    readOnly: true
+                  unload_file_path:
+                    description: relative path of the unload source file.
+                    type: string
+                    minLength: 1
+                    readOnly: true
+                  status:
+                    description: The status of the unload process.
+                    type: string
+                    enum: [ CREATED, CANCELLED, FAILED, RUNNING, SUCCEEDED ]
+                    readOnly: true
+                  error:
+                    description: Exception details.
+                    type: string
+                    readOnly: true
+      example:
+        execution_id: 1
+        job_id: 1
+        start_time: "2021-09-28T14:31:36.394504"
+        end_time: "2021-09-28T24:10:06.590344"
+        data_info:
+          - source_key: { "schema_name": "SRC_TEST_SCHEMA_1",
+                          "table_name": "SRC_TEST_TABLE_1" }
+            rows_unloaded: 100
+            unload_file_path: "/path/to/src/file/to/be/unloaded"
+            status: "SUCCEEDED"
+          - source_key: { "schema_name": "SRC_TEST_SCHEMA_2",
+                          "table_name": "SRC_TEST_TABLE_2" }
+            rows_unloaded: 100
+            unload_file_path: "/path/to/src/file/to/be/unloaded"
+            status: "SUCCEEDED"
+
+    ExecutionStatus:
+      title: ExecutionStatus
+      type: object
+      description: Execution status update model.
+      required:
+        - status
+      properties:
+        status:
+          description: The status of the Unload process.
+          type: string
+          enum: [ CREATED, CANCELLED, FAILED, RUNNING, SUCCEEDED ]
+          readOnly: true
+        error:
+          description: Optional, error detail.
+          type: string
+          nullable: true
+          readOnly: true
+      example:
+        status: "SUCCEEDED"
+
+    SourceData:
+      title: SourceData
+      type: object
+      description: A Delphix Hyperscale Unload source data.
+      properties:
+        status:
+          description: The status of the Unload process.
+          type: string
+          enum: [ FAILED, RUNNING, SUCCEEDED, CREATED, CANCELLED ]
+          readOnly: true
+        source_info:
+          description: Array of multiple objects, each object providing the information like sourceKey, unloadSplitCount etc.
+          type: array
+          minItems: 1
+          maxItems: 10000
+          items:
+            type: object
+            required:
+              - source_key
+              - unload_split_count
+              - total_number_of_rows
+            properties:
+              source_key:
+                description: Object providing the information like schema_name, table_name or file_name of the source datasource
+                type: object
+                additionalProperties:
+                  type: string
+                  readOnly: true
+              unload_split_count:
+                description: The number of unloaded files to be generated from the source database.
+                type: integer
+                format: int64
+                readOnly: true
+              total_number_of_rows:
+                description: Total number of rows unloaded from the database table.
+                type: integer
+                format: int64
+                readOnly: true
+              masking_split_count:
+                description: The number of masked splitted files to be generated.
+                type: integer
+                format: int64
+                readOnly: true
+      example:
+        status: "RUNNING"
+        source_info:
+          - source_key: { "schema_name": "SRC_TEST_SCHEMA_1",
+                          "table_name": "SRC_TEST_TABLE_1" }
+            unload_split_count: 2
+            total_number_of_rows: 250000
+          - source_key: { "schema_name": "SRC_TEST_SCHEMA_2",
+                          "table_name": "SRC_TEST_TABLE_2" }
+            unload_split_count: 4
+            total_number_of_rows: 500000
+            
+    Api-Version:
+      title: ApiVersion
+      description: ApiVersion model for returning the version id.
+      type: object
+      properties:
+        versionId:
+          description: The VersionId is used to return the current version of service.
+          type: string
+          nullable: false
+          minLength: 1
+          maxLength: 50
+      required: [versionId]
+      example:
+        versionId: "v3.0.0"
+            

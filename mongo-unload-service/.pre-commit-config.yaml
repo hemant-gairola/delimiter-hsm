@@ -40,4 +40,9 @@ repos:
             SUPPORT.md|
             mongo-unload-service/src/Dockerfile|
             mongo-unload-service/.gitignore|
+            db-files/controller-db.sqlite|
+            db-files/load-db.sqlite|
+            db-files/masking-db.sqlite|
+            db-files/unload-db.sqlite|
+            db-files/fast-api-generate/jinja-templates/api-with-doc.jinja2|
           )$
