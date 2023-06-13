@@ -9,7 +9,7 @@ Base = declarative_base()
 metadata = Base.metadata
 
 
-class UnloadProces(Base):
+class UnloadProcess(Base):
     __tablename__ = "unload_process"
 
     id = Column(Integer, primary_key=True)
