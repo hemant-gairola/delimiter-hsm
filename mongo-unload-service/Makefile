@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 by Delphix. All rights reserved.
 #
-.PHONY: --check_python --check_env_exists run tests --create_virtual_env --install_dependencies env clean_build clean_env clean build install version docker-image docker-run docker-stop docker-rm
+.PHONY: --check_python --check_env_exists run tests --create_virtual_env --install_dependencies env clean_build clean_env clean build install version docker-image docker-run docker-stop docker-rm docker-start
 
 ROOT_DIR := $(shell pwd)
 VENV := venv
@@ -95,17 +95,24 @@ docker-image:
 docker-run:
 	@# Help: Runs the docker container using the created image
 	-@docker run -d -p 8082:8080 --name mongo-hsc-unload-container mongo-hsc-unload-image
+	-@docker ps
+	-@echo "The mongo-unload-hsc-container swagger UI can be accessed at http://0.0.0.0:8082"
+
+docker-start:
+	@# Help: Starts the docker container
+	-@docker start $(DOCKER_CONTAINER_NAME)
+	-@echo "Started the container"
 	-@echo "The mongo-unload-hsc-container swagger UI can be accessed at http://0.0.0.0:8082"
 
 docker-stop:
 	@# Help: Stops the docker container
 	-@docker stop $(DOCKER_CONTAINER_NAME)
-	-@echo Stopped the container
+	-@echo "Stopped the container"
 
 docker-rm: docker-stop
 	@# Help: Removes the docker container
 	-@docker rm $(DOCKER_CONTAINER_NAME)
-	-@echo Removed the container
+	-@echo "Removed the container"
 
 --export_lang:
 	LC_ALL=en_AU.UTF-8
