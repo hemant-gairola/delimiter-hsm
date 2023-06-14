@@ -10,14 +10,13 @@ from src.validators.unload_validator import (ExecutionStatus, SourceData,
                                              Unload, UnloadResponse)
 
 router = APIRouter(
-    prefix="/unload",
     tags=["UnloadProcess"],
     responses={404: {"description": "Not found"}},
 )
 
 
 @router.post(
-    "",
+    "/unload",
     response_model=None,
     summary="Create a unload process to unload data to files from the source database.",  # noqa
     responses={"201": {"model": UnloadResponse}},
@@ -30,7 +29,7 @@ def create_unload(body: Unload) -> Union[None, UnloadResponse]:
 
 
 @router.get(
-    "/status/{executionId}",
+    "/unload/status/{executionId}",
     response_model=UnloadResponse,
     summary="Returns a Unload status by execution ID.",
 )
@@ -44,7 +43,7 @@ def get_unload_status_by_execution_id(
 
 
 @router.put(
-    "/status/{executionId}",
+    "/unload/status/{executionId}",
     response_model=None,
     summary="Update status of existing execution.",
 )
