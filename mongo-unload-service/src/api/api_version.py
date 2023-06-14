@@ -2,8 +2,14 @@
 # Copyright (c) 2023 by Delphix. All rights reserved.
 #
 
+import logging
+
 from fastapi import APIRouter
+from src.config import get_config
 from src.validators.api_version import ApiVersion
+
+config = get_config()
+logger = logging.getLogger("app-logger")
 
 router = APIRouter(
     prefix="/api-version",
@@ -19,4 +25,5 @@ def get_api_version() -> ApiVersion:
     """
     Returns the API version of service
     """
-    return ApiVersion(versionId="1.0.0")
+    logger.info("get api version called")
+    return ApiVersion(versionId=config["default"]["version"])

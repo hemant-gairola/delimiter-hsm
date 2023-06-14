@@ -38,7 +38,8 @@ repos:
             Pipfile|
             README.md|
             SUPPORT.md|
-            mongo-unload-service/src/Dockerfile|
+            mongo-unload-service/Dockerfile|
+            mongo-unload-service/.pylintrc|
             mongo-unload-service/.gitignore|
             db-files/controller-db.sqlite|
             db-files/load-db.sqlite|

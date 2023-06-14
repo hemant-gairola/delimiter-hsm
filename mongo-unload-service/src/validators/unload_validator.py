@@ -9,13 +9,19 @@ from pydantic import BaseModel, Field, constr
 
 
 class SourceConfigs(BaseModel):
+    """
+    Pydantic Model for SourceConfigs
+    """
+
     max_concurrent_source_connection: Optional[int] = Field(
         None,
         description="Maximum number of parallel connection that hyperscale can have with source datasource.",  # noqa
     )
 
 
-class Status(Enum):
+class Status(str, Enum):
+    """The status of the Unload process."""
+
     CREATED = "CREATED"
     CANCELLED = "CANCELLED"
     FAILED = "FAILED"
@@ -24,6 +30,10 @@ class Status(Enum):
 
 
 class DataInfoItem1(BaseModel):
+    """
+    Pydantic Model for DataInfoItem1
+    """
+
     source_key: Dict[str, str] = Field(
         ...,
         description="object providing the information like schema_name, table_name or file_name of the source datasource",  # noqa
@@ -39,30 +49,20 @@ class DataInfoItem1(BaseModel):
     error: Optional[str] = Field(None, description="Exception details.")
 
 
-class Status1(Enum):
-    CREATED = "CREATED"
-    CANCELLED = "CANCELLED"
-    FAILED = "FAILED"
-    RUNNING = "RUNNING"
-    SUCCEEDED = "SUCCEEDED"
-
-
 class ExecutionStatus(BaseModel):
-    status: Status1 = Field(
-        ..., description="The status of the Unload process."
-    )  # noqa
+    """
+    Pydantic Model for ExecutionStatus
+    """
+
+    status: Status = Field(..., description="The status of the Unload process.")  # noqa
     error: Optional[str] = Field(None, description="Optional, error detail.")
 
 
-class Status2(Enum):
-    FAILED = "FAILED"
-    RUNNING = "RUNNING"
-    SUCCEEDED = "SUCCEEDED"
-    CREATED = "CREATED"
-    CANCELLED = "CANCELLED"
-
-
 class Unload(BaseModel):
+    """
+    Pydantic Model for Unload
+    """
+
     execution_id: int = Field(..., description="The Unload object entity ID.")
     job_id: int = Field(
         ..., description="ID of the Job model to be used for this Unload."
@@ -76,6 +76,10 @@ class Unload(BaseModel):
 
 
 class SourceInfoItem(BaseModel):
+    """
+    Pydantic Model for SourceInfoItem
+    """
+
     source_key: Dict[str, str] = Field(
         ...,
         description="Object providing the information like schema_name, table_name or file_name of the source datasource",  # noqa
@@ -94,7 +98,11 @@ class SourceInfoItem(BaseModel):
 
 
 class SourceData(BaseModel):
-    status: Optional[Status2] = Field(
+    """
+    Pydantic Model for SourceData
+    """
+
+    status: Optional[Status] = Field(
         None, description="The status of the Unload process."
     )
     source_info: Optional[List[SourceInfoItem]] = Field(
@@ -106,6 +114,10 @@ class SourceData(BaseModel):
 
 
 class UnloadResponse(ExecutionStatus):
+    """
+    Pydantic Response Model for UnloadResponse
+    """
+
     execution_id: int = Field(..., description="The Unload object entity ID.")
     job_id: int = Field(
         ..., description="ID of the Job model to be used for this Unload."

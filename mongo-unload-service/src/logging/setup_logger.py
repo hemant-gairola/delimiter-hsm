@@ -1,31 +1,38 @@
+#
+# Copyright (c) 2023 by Delphix. All rights reserved.
+#
+
 import logging
-import logging.handlers
 import os
 import threading
+
+from src.config import get_config
 from src.utils import constants
 
+config = get_config()
 
-LOG_FILE_NAME = "sdm.log"
-MONITOR_LOG_FILE_NAME = "monitor.log"
-LOG_LEVEL = os.getenv("SDM_LOG_LEVEL", "INFO")
-ROTATION_CONDITION = 5242880
-RETENTION_TIME = 100
-TRACE = 8
+LOG_FILE_PATH = config["logging"]["file_location"]
+LOG_FILE_NAME = config["logging"]["file_name"]
+LOG_LEVEL = config["logging"]["log_level"]
 
 _lock = threading.Lock()
 
 log_level = {
     "DEBUG": logging.DEBUG,
     "INFO": logging.INFO,
-    "TRACE": TRACE,
+    "TRACE": constants.TRACE,
     "WARNING": logging.WARNING,
     "ERROR": logging.ERROR,
 }
 
 
-class SalesforceLogger(logging.Logger):
+class AppLogger(logging.Logger):
+    """
+    App Logger Class which extends logging.Logger
+    """
+
     def __init__(self, level=logging.NOTSET):
-        super().__init__(name="Salesforce", level=level)
+        super().__init__(name="Mongo Unload Service", level=level)
 
     def trace(self, msg, *args, **kwargs):
         """
@@ -36,11 +43,15 @@ class SalesforceLogger(logging.Logger):
 
         logger.trace("Houston, we have a %s", "bit of a problem", exc_info=1)
         """
-        if self.isEnabledFor(TRACE):
-            self._log(TRACE, msg, args, **kwargs)
+        if self.isEnabledFor(constants.TRACE):
+            self._log(constants.TRACE, msg, args, **kwargs)
 
 
 class Singleton(type):
+    """
+    Singleton Meta Class
+    """
+
     __instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -51,71 +62,45 @@ class Singleton(type):
         return cls.__instances[cls]
 
 
-class MonitorFilter(logging.Filter):
-    def filter(self, record: logging.LogRecord) -> bool:
-        """
-        Determine if the specified record is to be logged.
+class AppFileHandler(logging.FileHandler):
+    """
+    AppFileHandler class to extend logging.FileHandler
+    """
 
-        Returns True if the record should be logged, or False otherwise.
-        If deemed appropriate, the record may be modified in-place.
-        """
-        return record.module == "monitor"
-
-
-class SDMFilter(logging.Filter):
-    def filter(self, record: logging.LogRecord) -> bool:
-        """
-        Determine if the specified record is to be logged.
-
-        Returns True if the record should be logged, or False otherwise.
-        If deemed appropriate, the record may be modified in-place.
-        """
-        return record.module != "monitor"
-
-
-class SalesforceFileHandler(logging.FileHandler):
     def __init__(
         self, filename, mode="a", encoding=None, delay=False, errors=None
-    ):
+    ):  # noqa
         directory = os.path.dirname(filename)
         os.makedirs(directory, exist_ok=True)
         super().__init__(filename, mode, encoding, delay, errors)
 
 
 class Logger(metaclass=Singleton):
+    """
+    Logger class that will be a Singleton class
+    """
+
     def __init__(self):
-        logging_format = (
-            "[%(asctime)s] [%(levelname)s]"
-            " [%(filename)s:%(lineno)d] %(message)s"
-        )
-        logging.addLevelName(TRACE, "TRACE")
-        self.logger = SalesforceLogger()
+        logging.addLevelName(constants.TRACE, "TRACE")
+        self.logger = AppLogger()
         log_formatter = logging.Formatter(
-            logging_format, datefmt="%Y-%m-%dT%H:%M:%S %Z"
+            constants.FORMATTER, datefmt=constants.DATEFORMAT
         )
-        sdm_handler = SalesforceFileHandler(
-            filename=os.path.join(constants.LOG_FILE_LOCATION, LOG_FILE_NAME)
+        app_handler = logging.handlers.RotatingFileHandler(
+            filename=os.path.join(LOG_FILE_PATH, LOG_FILE_NAME),
+            maxBytes=constants.ROTATION_CONDITION,
+            backupCount=constants.RETENTION_TIME,
         )
-        sdm_handler.setFormatter(log_formatter)
-        sdm_handler.setLevel(log_level.get(LOG_LEVEL, logging.INFO))
-        sdm_handler.addFilter(SDMFilter())
+        app_handler.setFormatter(log_formatter)
+        app_handler.setLevel(log_level.get(LOG_LEVEL, logging.INFO))
 
-        monitor_handler = logging.handlers.RotatingFileHandler(
-            filename=os.path.join(
-                constants.LOG_FILE_LOCATION, MONITOR_LOG_FILE_NAME
-            ),
-            maxBytes=ROTATION_CONDITION,
-            backupCount=RETENTION_TIME,
-        )
-        monitor_handler.setFormatter(log_formatter)
-        monitor_handler.setLevel(log_level.get(LOG_LEVEL, logging.INFO))
-        monitor_handler.addFilter(MonitorFilter())
-
-        self.logger.addHandler(sdm_handler)
-        self.logger.addHandler(monitor_handler)
+        self.logger.addHandler(app_handler)
         self.logger.setLevel(log_level.get(LOG_LEVEL, logging.INFO))
 
     def get(self):
+        """
+        Method to return the instance logger
+        """
         return self.logger
 
 

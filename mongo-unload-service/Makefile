@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 by Delphix. All rights reserved.
 #
-.PHONY: --check_python --check_env_exists run tests --create_virtual_env --install_dependencies env clean_build clean_env clean build install version
+.PHONY: --check_python --check_env_exists run tests --create_virtual_env --install_dependencies env clean_build clean_env clean build install version docker-image docker-run docker-stop docker-rm
 
 ROOT_DIR := $(shell pwd)
 VENV := venv
@@ -12,7 +12,8 @@ red := $(shell tput setaf 1)
 reset := $(shell tput sgr0)
 SITE_PACKAGE_PATH := $(VENV)/lib/python3.9/site-packages
 REPO := https://artifactory.delphix.com/artifactory/api/pypi/delphix-local
-
+DOCKER_CONTAINER_NAME := mongo-hsc-unload-container
+DOCKER_IMAGE_NAME := mongo-hsc-unload-image
 
 define check_python_exists
 	@if ! command -v python3.9 -V >/dev/null 2>&1; then \
@@ -38,7 +39,7 @@ version:
 
 
 run: --check_env_exists --export_lang
-	@# Help: Runs the Fast API server on port 8000 using uvicorn
+	@# Help: Runs the Fast API server on port 8080 using uvicorn
 	-@echo 'Running the app...'
 	-$(UVICORN) src.main:app --host 0.0.0.0 --port 8080 --reload
 
@@ -86,6 +87,25 @@ clean: clean_build
 	-@rm -rf tests/CodeCoverage
 	-@rm -rf tests/Report.html
 	-@rm -rf sdm.egg-info
+
+docker-image:
+	@# Help: Creates the docker image
+	-@docker build -t $(DOCKER_IMAGE_NAME) .
+
+docker-run:
+	@# Help: Runs the docker container using the created image
+	-@docker run -d -p 8082:8080 --name mongo-hsc-unload-container mongo-hsc-unload-image
+	-@echo "The mongo-unload-hsc-container swagger UI can be accessed at http://0.0.0.0:8082"
+
+docker-stop:
+	@# Help: Stops the docker container
+	-@docker stop $(DOCKER_CONTAINER_NAME)
+	-@echo Stopped the container
+
+docker-rm: docker-stop
+	@# Help: Removes the docker container
+	-@docker rm $(DOCKER_CONTAINER_NAME)
+	-@echo Removed the container
 
 --export_lang:
 	LC_ALL=en_AU.UTF-8
