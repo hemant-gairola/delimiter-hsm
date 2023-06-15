@@ -46,6 +46,7 @@ repos:
             db-files/masking-db.sqlite|
             db-files/unload-db.sqlite|
             db-files/fast-api-generate/jinja-templates/api-with-doc.jinja2|
+            mongo-unload-service/tests/.coveragerc|
           )$
 
   - repo: local

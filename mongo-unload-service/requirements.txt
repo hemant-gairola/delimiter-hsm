@@ -11,3 +11,5 @@ uvicorn==0.22.0
 pytest==7.3.1
 fastapi-code-generator==0.4.2
 sqlacodegen==2.3.0
+pytest-cov==4.1.0
+pytest-html==3.2.0
