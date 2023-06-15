@@ -47,3 +47,14 @@ repos:
             db-files/unload-db.sqlite|
             db-files/fast-api-generate/jinja-templates/api-with-doc.jinja2|
           )$
+
+  - repo: local
+    hooks:
+    - id: pytest-check
+      name: pytest-check
+      stages: [commit]
+      types: [python]
+      entry: mongo-unload-service/run_tests.sh
+      language: script
+      pass_filenames: false
+      always_run: true

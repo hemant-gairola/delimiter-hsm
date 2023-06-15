@@ -13,7 +13,7 @@ config = get_config()
 
 LOG_FILE_PATH = config["logging"]["file_location"]
 LOG_FILE_NAME = config["logging"]["file_name"]
-LOG_LEVEL = config["logging"]["log_level"]
+LOG_LEVEL = "DEBUG"
 
 _lock = threading.Lock()
 
