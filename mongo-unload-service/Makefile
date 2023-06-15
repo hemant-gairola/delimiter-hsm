@@ -87,6 +87,7 @@ clean: clean_build
 	-@rm -rf tests/CodeCoverage
 	-@rm -rf tests/Report.html
 	-@rm -rf sdm.egg-info
+	-@rm -rf .pytest_cache/
 
 docker-image:
 	@# Help: Creates the docker image
