@@ -12,8 +12,7 @@ from src.api.api_version import router as api_version_router
 from src.api.connector_management import router as connector_router
 from src.api.data_set import router as data_set_router
 from src.api.unload import router as unload_router
-from src.config import get_config
-from src.logging import log_config
+from src.config import get_config, log_config
 
 # handle the gunicorn log handler
 gunicorn_logger = logging.getLogger("gunicorn.error")
@@ -26,6 +25,7 @@ else:
 
 # load the log config before initializing FastAPI
 dictConfig(log_config)
+logging.getLogger("app-logger").handlers.extend(logger.handlers)
 
 config = get_config()
 app = FastAPI()
