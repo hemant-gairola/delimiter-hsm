@@ -6,7 +6,7 @@ import logging
 from logging.config import dictConfig
 
 from fastapi import FastAPI
-from fastapi.logger import logger
+from fastapi.logger import logger as fastapi_logger
 from fastapi.responses import RedirectResponse
 from src.api.api_version import router as api_version_router
 from src.api.connector_management import router as connector_router
@@ -16,16 +16,15 @@ from src.config import get_config, log_config
 
 # handle the gunicorn log handler
 gunicorn_logger = logging.getLogger("gunicorn.error")
-logger.handlers = gunicorn_logger.handlers
+fastapi_logger.handlers = gunicorn_logger.handlers
 
 if __name__ != "main":
-    logger.setLevel(gunicorn_logger.level)
+    fastapi_logger.setLevel(gunicorn_logger.level)
 else:
-    logger.setLevel(logging.DEBUG)
+    fastapi_logger.setLevel(logging.DEBUG)
 
 # load the log config before initializing FastAPI
 dictConfig(log_config)
-logging.getLogger("app-logger").handlers.extend(logger.handlers)
 
 config = get_config()
 app = FastAPI()
@@ -48,6 +47,13 @@ sub_app.include_router(unload_router)
 sub_app.include_router(data_set_router)
 
 app.mount("/api", sub_app)
+logger = logging.getLogger("app-logger")
+
+logger.info("****** Starting The App **********")
+logger.info("Sample INFO Log")
+logger.warning("Sample WARNING Log")
+logger.error("Sample ERROR Log")
+logger.debug("Sample DEBUG Log")
 
 
 @app.get("/", include_in_schema=False)

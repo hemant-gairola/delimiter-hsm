@@ -29,16 +29,22 @@ log_config = {
             "fmt": constants.FORMATTER,
             "datefmt": constants.DATEFORMAT,
         },
+        "colorized": {
+            "()": "uvicorn.logging.ColourizedFormatter",
+            "fmt": constants.COLOR_FORMATTER,
+            "style": "{",
+            "use_colors": True,
+        },
     },
     "handlers": {
         "default": {
-            "formatter": "default",
+            "formatter": "colorized",
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stdout",
         },
         "rotating-file-handler": {
             "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "default",
+            "formatter": "colorized",
             "filename": log_file,
             "maxBytes": constants.ROTATION_CONDITION,
             "backupCount": constants.BACKUP_COUNT,
