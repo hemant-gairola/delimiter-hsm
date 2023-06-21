@@ -13,3 +13,6 @@ fastapi-code-generator==0.4.2
 sqlacodegen==2.3.0
 pytest-cov==4.1.0
 pytest-html==3.2.0
+requests
+pyarrow
+sqlalchemy

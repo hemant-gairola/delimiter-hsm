@@ -1,0 +1,36 @@
+#
+# Copyright (c) 2023 by Delphix. All rights reserved.
+#
+
+brwr_crdt_rpt_id: double
+brwr_crdt_rpt_src_typ: string
+brwr_crdt_rpt_file_tran_typ: string
+brwr_crdt_rpt_tln_seq_no: int64
+brwr_crdt_rpt_tln_hist_seq_no: int64
+brwr_applt_seq_no: int64
+brwr_crdt_rpt_tln_hist_seq_id: null
+brwr_crdt_acct_no: string
+brwr_crdt_acct_hist_mths_cnt: int64
+brwr_crdt_rpt_liab_owns_typ: string
+brwr_crdt_orig_acct_rptd_dt: timestamp[s]
+brwr_crdt_acct_rptd_dt: timestamp[s]
+brwr_crdt_acct_high_bal_amt: int64
+brwr_crdt_acct_lmt_amt: int64
+brwr_cacct_mrcent_pmt_amt: int64
+brwr_cacct_mrcent_pmt_dt: timestamp[s]
+brwr_crdt_acct_dlqy_amt: int64
+brwr_crdt_acct_unpd_bal_amt: int64
+brwr_crdt_acct_min_pmt_amt: int64
+brwr_crdt_acct_typ: string
+brwr_crdt_acct_eqfx_narr_1_cd: string
+brwr_crdt_acct_eqfx_narr_2_cd: string
+brwr_crdt_acct_eqfx_narr_3_cd: null
+brwr_crdt_acct_eqfx_narr_4_cd: null
+brwr_cacct_tu_1_rmk_cd: null
+brwr_cacct_tu_2_rmk_cd: null
+brwr_cacct_tu_3_rmk_cd: null
+rec_cren_dttm: timestamp[s]
+rec_cren_usr_id: string
+rec_last_upd_dttm: timestamp[s]
+rec_last_upd_usr_id: string
+bch_prcs_id: double

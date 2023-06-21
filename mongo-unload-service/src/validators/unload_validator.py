@@ -70,9 +70,9 @@ class Unload(BaseModel):
     dataset_id: int = Field(
         ..., description="ID of the Data Set model to be used for this Unload."
     )
-    source_configs: Optional[SourceConfigs] = Field(
-        None, description="configuration properties for source datasource"
-    )
+    # source_configs: Optional[SourceConfigs] = Field(
+    #     None, description="configuration properties for source datasource"
+    # )
 
 
 class SourceInfoItem(BaseModel):

@@ -17,9 +17,9 @@ class ConnectorResponse(BaseModel):
     jdbc_url: constr(min_length=1, max_length=256) = Field(
         ..., description="The jdbc url of this connector."
     )
-    connection_properties: Optional[Dict[str, str]] = Field(
-        None, description="The properties of this connector."
-    )
+    # connection_properties: Optional[Dict[str, str]] = Field(
+    #     None, description="The properties of this connector."
+    # )
 
 
 class Connector(ConnectorResponse):

@@ -2,11 +2,31 @@
 # Copyright (c) 2023 by Delphix. All rights reserved.
 #
 
+import json
 from typing import List, Union
 
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Depends, Path
 from pydantic import conint
+from sqlalchemy.orm import Session
+from src.databases.database import SessionLocal, engine
+from src.models.connector import Base as base_connector
+from src.repository.base_repository import BaseRepository
 from src.validators.connector_validator import Connector, ConnectorResponse
+
+router = APIRouter()
+
+base_repo = BaseRepository()
+
+base_connector.metadata.create_all(bind=engine)
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 router = APIRouter(
     prefix="/connectors",
@@ -20,11 +40,21 @@ router = APIRouter(
     response_model=None,
     responses={"201": {"model": ConnectorResponse}},
 )
-def create_connector(body: Connector) -> Union[None, ConnectorResponse]:
+def create_connector(
+    body: Connector, db: Session = Depends(get_db)
+) -> Union[None, ConnectorResponse]:
     """
     Create Connector.
     """
-    pass
+
+    data = base_repo.save_data_into_connector(body.dict(), db=db)
+    parsed_data = json.loads(data.data)
+    response = {
+        "id": data.id,
+        "jdbc_url": parsed_data["jdbcUrl"],
+        "user": parsed_data["user"],
+    }
+    return ConnectorResponse(**response)
 
 
 @router.get(
