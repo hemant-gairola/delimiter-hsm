@@ -118,6 +118,10 @@ class BaseRepository:
         data = db.query(DataSet).filter(DataSet.id == id).first()
         return data
 
+    def getByIdsourceData(self, db: Session, id: int):
+        data = db.query(SourceData).filter(DataSet.id == id).first()
+        return data
+
     def getByData(self):
         pass
 

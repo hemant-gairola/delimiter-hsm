@@ -196,13 +196,17 @@ def clean_up_execution(
     response_model=SourceData,
     summary="Returns the source data by execution ID.",
 )
-def get_source_data_by_execution_id(
-    execution_id: conint(ge=1) = Path(..., alias="executionId")
-) -> SourceData:
+def get_source_data_by_execution_id(execution_id: int, db: Session = Depends(get_db)) -> SourceData:
     """
     Returns the source data by execution ID.
     """
-    pass
+    data = base_repo.getByIdsourceData(id=execution_id, db=db)
+    parsed_data = json.loads(data.data)
+    response = {
+        "status":"SUCCEEDED",
+        "sourceInfo":[]
+    }
+    return SourceData(**response)
 
 
 ########################################
