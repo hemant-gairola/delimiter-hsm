@@ -109,7 +109,7 @@ class SourceData(BaseModel):
         None,
         description="Array of multiple objects, each object providing the information like sourceKey, unloadSplitCount etc.",  # noqa
         max_items=10000,
-        min_items=1,
+        min_items=0,
     )
 
 
