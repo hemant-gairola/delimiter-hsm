@@ -117,7 +117,7 @@ def create_unload(
     with open("/app/table1_format.txt") as f:
         lines2 = f.readlines()
     a = [i.split(":")[0] for i in lines2]
-    file1 = open(target_format_file, 'w')
+    file1 = open(target_format_file, 'a+')
     file1.writelines(a)
     # Local target path
     # target_file_path = "/Users/hemant.gairola/all_code/hemant_hsc_github/delimiter-hsm/mongo-unload-service/output"
