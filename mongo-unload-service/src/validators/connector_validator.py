@@ -23,16 +23,18 @@ class ConnectorResponse(BaseModel):
 
 
 class Connector(ConnectorResponse):
-    password: constr(min_length=1, max_length=256) = Field(
+    user : constr(min_length=1, max_length=256) = Field(
         ..., description="The password of this connector."
-    )
-    restoreSensitiveFields: Optional[bool] = Field(
-        False,
-        description="Passed to indicate that user want to restore the sensitive data.",  # noqa
-    )
-    jdbc_url: constr(min_length=1, max_length=256) = Field(
-        ..., description="The jdbc url of this connector."
-    )
-    user: constr(min_length=1, max_length=256) = Field(
-        ..., description="The username of this connector."
-    )
+    # password: constr(min_length=1, max_length=256) = Field(
+    #     ..., description="The password of this connector."
+    # )
+    # restoreSensitiveFields: Optional[bool] = Field(
+    #     False,
+    #     description="Passed to indicate that user want to restore the sensitive data.",  # noqa
+    # )
+    # jdbc_url: constr(min_length=1, max_length=256) = Field(
+    #     ..., description="The jdbc url of this connector."
+    # )
+    # user: constr(min_length=1, max_length=256) = Field(
+    #     ..., description="The username of this connector."
+    # )
