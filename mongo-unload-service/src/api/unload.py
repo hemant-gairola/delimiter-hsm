@@ -114,14 +114,17 @@ def create_unload(
     target_format_file = (
         f"/etc/hyperscale/{mount_name}/{job_id}/src/table1_format.txt"
     )
-    with open("/app/table1_format.txt") as f:
-        lines2 = f.readlines()
-    a = [i.split(":")[0] for i in lines2]
-    file1 = open(target_format_file, 'a+')
-    file1.writelines(a)
+
     # Local target path
     # target_file_path = "/Users/hemant.gairola/all_code/hemant_hsc_github/delimiter-hsm/mongo-unload-service/output"
     os.makedirs(name=f"{target_file_path}", exist_ok=True)
+
+    with open("/app/table1_format.txt") as f:
+        lines2 = f.readlines()
+    a = [i.split(":")[0] for i in lines2]
+    file1 = open(target_format_file, 'w+')
+    for i in a:
+        file1.write(i + "\n")
 
     # Prepare source key
     source_key = {"schema_name": schema_name, "table_name": table_name}
